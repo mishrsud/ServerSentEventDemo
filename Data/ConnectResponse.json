@@ -1,0 +1,38 @@
+// Connect Response
+{  
+   "path":"/",
+   "data":{  
+      "segments":{  
+
+      },
+      "flags":{  
+         "my-setting-enabled":{  
+            "key":"my-setting-enabled",
+            "version":13,
+            "on":false,
+            "prerequisites":[  
+
+            ],
+            "salt":"83c254c8a0ce41c7ac479658aedf6a1a",
+            "sel":"ace837517d9045fdaac74d4a55fa6dad",
+            "targets":[  
+
+            ],
+            "rules":[  
+
+            ],
+            "fallthrough":{  
+               "variation":0
+            },
+            "offVariation":1,
+            "variations":[  
+               true,
+               false
+            ],
+            "trackEvents":true,
+            "debugEventsUntilDate":null,
+            "deleted":false
+         }
+      }
+   }
+}
