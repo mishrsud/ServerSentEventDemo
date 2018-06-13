@@ -29,7 +29,7 @@ namespace SseConsoleClient
         {
             var props = new Common.Logging.Configuration.NameValueCollection
             {
-                { "level", "debug" }
+                { "level", "warn" }
             };
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(props);
 
@@ -43,7 +43,7 @@ namespace SseConsoleClient
             LdClient client = new LdClient(ldConfig);
             User user = User.WithKey("Default");
             
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
                 var value = client.BoolVariation(TestFeatureFlag, user, false);
                 Log("got value {0}", value);

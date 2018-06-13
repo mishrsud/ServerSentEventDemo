@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SseServer.Model;
 
 namespace SseServer.Controllers
 {
@@ -6,6 +7,8 @@ namespace SseServer.Controllers
     [Route("sdk/latest-all")]
     public class FlagsController : Controller
     {
+        private FeatureFlagStore _featureFlagStore = FeatureFlagStore.GetFeatureFlagStore();
+        
         [HttpGet]
         public object Get()
         {
@@ -16,6 +19,12 @@ namespace SseServer.Controllers
         public object Get(string key)
         {
             return GetFlag("my-setting-enabled");
+        }
+
+        [HttpPost]
+        public void Post()
+        {
+            _featureFlagStore.FireDataChange();
         }
 
         private object GetFlag(string flagKey)

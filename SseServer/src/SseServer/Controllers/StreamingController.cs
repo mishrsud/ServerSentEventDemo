@@ -11,7 +11,20 @@ namespace SseServer.Controllers
     [Produces("text/event-stream")]
     public class StreamingController : Controller
     {
-        private static DateTime _nextUpDateTime = DateTime.Now;
+        private FeatureFlagStore _featureFlagStore = FeatureFlagStore.GetFeatureFlagStore();
+        private static bool _sendUpdate = false;
+        private static bool _flagValue;
+
+        public StreamingController()
+        {
+            _featureFlagStore.OnDataChanged += ProcessDataChange;
+        }
+
+        private void ProcessDataChange(object sender, EventArgs e)
+        {
+            _sendUpdate = true;
+            _flagValue = !_flagValue;
+        }
 
         public async Task Get()
         {
@@ -26,11 +39,14 @@ namespace SseServer.Controllers
 
             while (true)
             {
-                await streamWriter.WriteLineAsync(":");
-                await streamWriter.FlushAsync();
-                _nextUpDateTime = DateTime.Now.AddSeconds(5);
-                await Task.Delay(TimeSpan.FromMilliseconds(5000));
-                //continue;
+                if (!_sendUpdate)
+                {
+                    await streamWriter.WriteLineAsync(":");
+                    await streamWriter.FlushAsync();
+                    version++;
+                    await Task.Delay(TimeSpan.FromMilliseconds(5000));
+                    continue; 
+                }
                 await streamWriter.WriteLineAsync("event: patch");
                 await streamWriter.WriteLineAsync($"data: {GetResponseToStream(version)}");
                 // A blank line marks the end of a message
@@ -40,48 +56,15 @@ namespace SseServer.Controllers
                 await streamWriter.FlushAsync();
                 await Task.Delay(TimeSpan.FromMilliseconds(5000));
                 version++;
+                _sendUpdate = false;
             }
         }
 
         private string GetResponseToStream(int version)
         {
-            //var streamingResponse = new StreamingResponse
-            //{
-            //    path = "/flags/my-setting-enabled",
-            //    data = new Data
-            //    {
-            //        key = "my-setting-enabled",
-            //        version = version,
-            //        on = true,//version % 2 == 0,
-            //        prerequisites = new object[0],
-            //        salt = "83c254c8a0ce41c7ac479658aedf6a1a",
-            //        sel = "ace837517d9045fdaac74d4a55fa6dad",
-            //        targets = new object[0],
-            //        rules = new object[0],
-            //        fallthrough = new Fallthrough
-            //        {
-            //            variation = 0
-            //        },
-            //        offVariation = 1,
-            //        variations = new[] { true, false },
-            //        trackEvents = true,
-            //        debugEventsUntilDate = null,
-            //        deleted = false
-            //    }
-            //};
-
-            //return JsonConvert.SerializeObject(streamingResponse);
-            if (version % 2 != 0)
-            {
-                return
-                "{\"path\":\"/flags/my-setting-enabled\",\"data\":{\"key\":\"my-setting-enabled\",\"version\"" +
-                    $":{version}" +
-                    ",\"on\":true,\"prerequisites\":[],\"salt\":\"83c254c8a0ce41c7ac479658aedf6na1a\",\"sel\":\"ace837517d9045fdaac74d4a55fa6dad\",\"targets\":[],\"rules\":[],\"fallthrough\":{\"variation\":0},\"offVariation\":1,\"variations\":[true,false],\"trackEvents\":true,\"debugEventsUntilDate\":null,\"deleted\":false}}";
-            }
-
             return "{\"path\":\"/flags/my-setting-enabled\",\"data\":{\"key\":\"my-setting-enabled\",\"version\"" +
                    $":{version}" +
-                   ",\"on\":false,\"prerequisites\":[],\"salt\":\"83c254c8a0ce41c7ac479658aedf6na1a\",\"sel\":\"ace837517d9045fdaac74d4a55fa6dad\",\"targets\":[],\"rules\":[],\"fallthrough\":{\"variation\":0},\"offVariation\":1,\"variations\":[true,false],\"trackEvents\":true,\"debugEventsUntilDate\":null,\"deleted\":false}}";
+                   ",\"on\":" + _flagValue.ToString().ToLowerInvariant() + ",\"prerequisites\":[],\"salt\":\"83c254c8a0ce41c7ac479658aedf6na1a\",\"sel\":\"ace837517d9045fdaac74d4a55fa6dad\",\"targets\":[],\"rules\":[],\"fallthrough\":{\"variation\":0},\"offVariation\":1,\"variations\":[true,false],\"trackEvents\":true,\"debugEventsUntilDate\":null,\"deleted\":false}}";
         }
 
         private string GetConnectResponse()
