@@ -29,13 +29,13 @@ namespace SseConsoleClient
         {
             var props = new Common.Logging.Configuration.NameValueCollection
             {
-                { "level", "all" }
+                { "level", "debug" }
             };
             LogManager.Adapter = new ConsoleOutLoggerFactoryAdapter(props);
 
             var ldConfig = LaunchDarkly.Client.Configuration
                 .Default(TestSdkKey)
-                //.WithIsStreamingEnabled(false)
+                //.WithIsStreamingEnabled(false)//;
                 .WithUri("http://sudawsm:49345/")
                 .WithStreamUri("http://sudawsm:49345/")
                 .WithEventsUri("http://sudawsm:49345/");
@@ -46,12 +46,13 @@ namespace SseConsoleClient
             for (int i = 0; i < 10; i++)
             {
                 var value = client.BoolVariation(TestFeatureFlag, user, false);
+                Log("got value {0}", value);
                 Log(
                     value
                         ? "Showing feature for user {0}, iteration: {1}"
                         : "Not showing feature for user {0}, iteration: {1}", user.Key, i);
                 client.Flush();
-                Task.Delay(TimeSpan.FromMilliseconds(2000)).Wait();
+                Task.Delay(TimeSpan.FromMilliseconds(5000)).Wait();
             }
             Log("Finished, press any key to continue");
             Console.ReadKey();
@@ -62,7 +63,7 @@ namespace SseConsoleClient
             Log("Starting...");
 
             //"https://stream.launchdarkly.com/all";
-            var url = "http://localhost:49345/all";
+            var url = "https://stream.launchdarkly.com/all";//"http://localhost:49345/all";
             var authKey = $"sdk-{Guid.NewGuid():N}";
 
             var connectionTimeout =
