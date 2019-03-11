@@ -11,12 +11,13 @@ namespace SseServer.Controllers
     [Produces("text/event-stream")]
     public class StreamingController : Controller
     {
-        private FeatureFlagStore _featureFlagStore = FeatureFlagStore.GetFeatureFlagStore();
+        private readonly IFeatureFlagStore _featureFlagStore;
         private static bool _sendUpdate = false;
         private static bool _flagValue;
 
-        public StreamingController()
+        public StreamingController(IFeatureFlagStore featureFlagStore)
         {
+            _featureFlagStore = featureFlagStore;
             _featureFlagStore.OnDataChanged += ProcessDataChange;
         }
 
@@ -52,7 +53,7 @@ namespace SseServer.Controllers
                 // A blank line marks the end of a message
                 await streamWriter.WriteLineAsync();
 
-                // Flushing the stream causes reponse to be sent back
+                // Flushing the stream causes response to be sent back
                 await streamWriter.FlushAsync();
                 await Task.Delay(TimeSpan.FromMilliseconds(5000));
                 version++;

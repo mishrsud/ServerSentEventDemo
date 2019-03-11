@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SseServer.Model;
 
 namespace SseServer.Controllers
 {
@@ -7,8 +6,13 @@ namespace SseServer.Controllers
     [Route("sdk/latest-all")]
     public class FlagsController : Controller
     {
-        private FeatureFlagStore _featureFlagStore = FeatureFlagStore.GetFeatureFlagStore();
-        
+        private readonly IFeatureFlagStore _featureFlagStore;
+
+        public FlagsController(IFeatureFlagStore featureFlagStore)
+        {
+            _featureFlagStore = featureFlagStore;
+        }
+
         [HttpGet]
         public object Get()
         {
@@ -63,6 +67,4 @@ namespace SseServer.Controllers
             //};
         }
     }
-
-
 }
